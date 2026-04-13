@@ -14,6 +14,10 @@ public class DeliveriesController(IDeliveryService deliveries) : ControllerBase
     public async Task<ActionResult<IReadOnlyList<DeliveryDto>>> Mine(CancellationToken ct) =>
         Ok(await deliveries.GetMineAsync(CurrentUser.Id(User), ct));
 
+    [HttpGet("mine/route")]
+    public async Task<ActionResult<IReadOnlyList<DeliveryDto>>> Route(CancellationToken ct) =>
+        Ok(await deliveries.GetRouteAsync(CurrentUser.Id(User), ct));
+
     [HttpPut("{id:guid}/pickup")]
     public async Task<IActionResult> Pickup(Guid id, CancellationToken ct)
     {

@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodFirst.Service.Implementations;
 
-public class OrderService(AppDbContext db) : IOrderService
+public class OrderService(
+    AppDbContext db,
+    IZoneResolver zoneResolver,
+    IDeliveryAssignmentService deliveryAssignment) : IOrderService
 {
     private const decimal DeliveryFee = 3.50m;
     private const decimal TvaRate = 0.06m;
@@ -23,6 +26,13 @@ public class OrderService(AppDbContext db) : IOrderService
 
     public async Task<OrderDto> CreateAsync(Guid clientId, CreateOrderRequest request, CancellationToken ct = default)
     {
+        var address = await db.Addresses.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == request.DeliveryAddressId && a.UserId == clientId, ct)
+            ?? throw new KeyNotFoundException($"Delivery address {request.DeliveryAddressId} not found.");
+
+        var zone = await zoneResolver.ResolveByCommuneAsync(address.Commune, ct)
+            ?? throw new InvalidOperationException($"No active delivery zone covers commune '{address.Commune}'.");
+
         await using var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
 
         var (priced, errors) = await PriceCartAsync(request.Items, ct);
@@ -48,6 +58,7 @@ public class OrderService(AppDbContext db) : IOrderService
             OrderNumber = $"FF-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}",
             ClientId = clientId,
             DeliveryAddressId = request.DeliveryAddressId,
+            ZoneId = zone.Id,
             Status = OrderStatus.Pending,
             SubTotal = subTotal,
             DeliveryFee = DeliveryFee,
@@ -108,6 +119,9 @@ public class OrderService(AppDbContext db) : IOrderService
             case OrderStatus.Cancelled: order.CancelledAt = DateTime.UtcNow; break;
         }
         await db.SaveChangesAsync(ct);
+
+        if (status == OrderStatus.Paid)
+            await deliveryAssignment.AssignAsync(order.Id, ct);
     }
 
     private async Task<(List<PricedLine> Priced, List<string> Errors)> PriceCartAsync(IReadOnlyList<CartItemDto> items, CancellationToken ct)

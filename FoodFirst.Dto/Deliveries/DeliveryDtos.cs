@@ -16,6 +16,12 @@ public record DeliveryDto(
 
 public record UpdateLocationRequest(decimal Latitude, decimal Longitude);
 
-public record CompleteDeliveryRequest(string? ProofPhotoUrl, string? ClientSignature, int? ClientRating, string? ClientComment);
+public record CompleteDeliveryRequest(
+    string? ProofPhotoUrl,
+    string? ClientSignature,
+    int? ClientRating,
+    string? ClientComment,
+    decimal? CollectedTemperature,
+    decimal? DeliveredTemperature);
 
 public record FailDeliveryRequest(string? Reason);

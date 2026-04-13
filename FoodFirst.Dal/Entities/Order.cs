@@ -8,6 +8,7 @@ public class Order
     public string OrderNumber { get; set; } = string.Empty;
     public Guid ClientId { get; set; }
     public Guid DeliveryAddressId { get; set; }
+    public Guid? ZoneId { get; set; }
     public OrderStatus Status { get; set; }
     public decimal SubTotal { get; set; }
     public decimal DeliveryFee { get; set; }
@@ -27,6 +28,7 @@ public class Order
     // Navigation properties
     public User Client { get; set; } = null!;
     public Address DeliveryAddress { get; set; } = null!;
+    public Zone? Zone { get; set; }
     public ICollection<OrderItem> Items { get; set; } = [];
     public Payment? Payment { get; set; }
     public Delivery? Delivery { get; set; }

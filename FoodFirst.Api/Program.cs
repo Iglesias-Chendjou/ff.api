@@ -90,6 +90,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+builder.Services.AddScoped<IZoneResolver, ZoneResolver>();
+builder.Services.AddScoped<IDeliveryAssignmentService, DeliveryAssignmentService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<ISurpriseBoxService, SurpriseBoxService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();

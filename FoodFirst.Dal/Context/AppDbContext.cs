@@ -169,6 +169,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(e => e.DeliveryAddressId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Zone)
+                .WithMany()
+                .HasForeignKey(e => e.ZoneId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ──── OrderItem ────
