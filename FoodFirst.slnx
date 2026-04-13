@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="FoodFirst.Api/FoodFirst.Api.csproj" />
+  <Project Path="FoodFirst.Dal/FoodFirst.Dal.csproj" />
+  <Project Path="FoodFirst.Dto/FoodFirst.Dto.csproj" />
+  <Project Path="FoodFirst.Repository/FoodFirst.Repository.csproj" />
+  <Project Path="FoodFirst.Service/FoodFirst.Service.csproj" />
+  <Project Path="FoodFirst.Tools/FoodFirst.Tools.csproj" />
+</Solution>

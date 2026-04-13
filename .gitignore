@@ -1,0 +1,54 @@
+## .NET build outputs
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.swp
+
+## MSTest / TestResults
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ASP.NET
+**/wwwroot/lib/
+**/wwwroot/dist/
+appsettings.*.Local.json
+*.dbmdl
+*.jfm
+
+## Environment / secrets
+*.env
+*.env.local
+.env
+.env.*
+!.env.example
+secrets.json
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## User-specific
+*.slnLaunch.user
