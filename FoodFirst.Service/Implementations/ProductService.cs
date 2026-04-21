@@ -10,7 +10,17 @@ public class ProductService(IStoreInventoryRepository inventories) : IProductSer
     public async Task<IReadOnlyList<AvailableProductDto>> GetAvailableByZoneAsync(Guid zoneId, CancellationToken ct = default)
     {
         var items = await inventories.GetAvailableByZoneAsync(zoneId, ct);
-        return items.Select(si =>
+        return MapToDto(items);
+    }
+
+    public async Task<IReadOnlyList<AvailableProductDto>> GetAllAvailableAsync(CancellationToken ct = default)
+    {
+        var items = await inventories.GetAllAvailableAsync(ct);
+        return MapToDto(items);
+    }
+
+    private static List<AvailableProductDto> MapToDto(IReadOnlyList<Dal.Entities.StoreInventory> items) =>
+        items.Select(si =>
         {
             var original = si.SelectedRange switch
             {
@@ -36,5 +46,4 @@ public class ProductService(IStoreInventoryRepository inventories) : IProductSer
                 si.StoreId,
                 si.Store.Name);
         }).ToList();
-    }
 }

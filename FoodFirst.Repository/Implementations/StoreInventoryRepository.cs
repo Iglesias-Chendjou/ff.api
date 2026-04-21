@@ -18,6 +18,16 @@ public class StoreInventoryRepository(AppDbContext db) : Repository<StoreInvento
                 && si.Store.IsActive)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<StoreInventory>> GetAllAvailableAsync(CancellationToken ct = default) =>
+        await Set.AsNoTracking()
+            .Include(si => si.ProductTemplate).ThenInclude(pt => pt.Category)
+            .Include(si => si.Store)
+            .Where(si => si.IsPublished
+                && si.AvailableQuantity > 0
+                && si.ExpirationDate > DateTime.UtcNow
+                && si.Store.IsActive)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<StoreInventory>> GetByStoreAsync(Guid storeId, CancellationToken ct = default) =>
         await Set.AsNoTracking()
             .Include(si => si.ProductTemplate)
