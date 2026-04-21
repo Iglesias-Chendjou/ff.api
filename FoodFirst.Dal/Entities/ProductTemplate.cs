@@ -7,6 +7,9 @@ public class ProductTemplate
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public string? Barcode { get; set; }
+    public string? Brand { get; set; }
+    public string? NutritionGrade { get; set; }
     public string Unit { get; set; } = string.Empty;
     public decimal PriceLowRange { get; set; }
     public decimal PriceMidRange { get; set; }

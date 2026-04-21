@@ -165,74 +165,28 @@ public static class DevDataSeeder
             await db.SaveChangesAsync();
         }
 
-        if (!await db.ProductTemplates.AnyAsync())
+        // Seed Colruyt store
+        var colruyt = await db.Stores.FirstOrDefaultAsync(s => s.Name == "Colruyt Ixelles");
+        if (colruyt is null)
         {
-            var boulangerie = await db.ProductCategories.FirstAsync(c => c.Name == "Boulangerie");
-            var laitiers = await db.ProductCategories.FirstAsync(c => c.Name == "Produits laitiers");
-            var fruitsLegumes = await db.ProductCategories.FirstAsync(c => c.Name == "Fruits & Légumes");
-
-            db.ProductTemplates.AddRange(
-                new ProductTemplate
-                {
-                    Id = Guid.NewGuid(),
-                    CategoryId = boulangerie.Id,
-                    Name = "Pain de campagne",
-                    Description = "Pain artisanal, cuit le jour même",
-                    Unit = "pièce",
-                    PriceLowRange = 2.50m,
-                    PriceMidRange = 3.20m,
-                    PriceHighRange = 4.00m,
-                    DiscountPercent = 50,
-                    IsActive = true
-                },
-                new ProductTemplate
-                {
-                    Id = Guid.NewGuid(),
-                    CategoryId = laitiers.Id,
-                    Name = "Yaourt nature bio",
-                    Description = "Yaourt fermier bio 500g",
-                    Unit = "pot",
-                    PriceLowRange = 1.80m,
-                    PriceMidRange = 2.50m,
-                    PriceHighRange = 3.20m,
-                    DiscountPercent = 50,
-                    IsActive = true
-                },
-                new ProductTemplate
-                {
-                    Id = Guid.NewGuid(),
-                    CategoryId = fruitsLegumes.Id,
-                    Name = "Pommes Jonagold (1kg)",
-                    Description = "Pommes belges calibre moyen",
-                    Unit = "kg",
-                    PriceLowRange = 1.50m,
-                    PriceMidRange = 2.20m,
-                    PriceHighRange = 2.90m,
-                    DiscountPercent = 50,
-                    IsActive = true
-                });
-            await db.SaveChangesAsync();
-        }
-
-        if (!await db.StoreInventories.AnyAsync(si => si.StoreId == store.Id))
-        {
-            var templates = await db.ProductTemplates.Take(3).ToListAsync();
-            foreach (var t in templates)
+            colruyt = new Store
             {
-                db.StoreInventories.Add(new StoreInventory
-                {
-                    Id = Guid.NewGuid(),
-                    StoreId = store.Id,
-                    ProductTemplateId = t.Id,
-                    SelectedRange = PriceRange.Mid,
-                    Quantity = 20,
-                    AvailableQuantity = 20,
-                    ExpirationDate = DateTime.UtcNow.AddDays(2),
-                    CheckedAt = DateTime.UtcNow,
-                    CheckedByUserId = driverUser.Id,
-                    IsPublished = true
-                });
-            }
+                Id = Guid.NewGuid(),
+                Name = "Colruyt Ixelles",
+                Brand = "Colruyt",
+                Address = "Chaussée de Wavre 50",
+                PostalCode = "1050",
+                City = "Bruxelles",
+                Commune = "Ixelles",
+                Latitude = 50.8333m,
+                Longitude = 4.3667m,
+                Phone = "+3225559876",
+                ContactEmail = "ixelles@colruyt.be",
+                ZoneId = centreZone.Id,
+                IsActive = true,
+                ContractStartDate = DateTime.UtcNow.AddMonths(-2)
+            };
+            db.Stores.Add(colruyt);
             await db.SaveChangesAsync();
         }
     }

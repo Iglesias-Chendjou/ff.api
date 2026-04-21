@@ -121,6 +121,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.PriceLowRange).HasPrecision(10, 2);
             entity.Property(e => e.PriceMidRange).HasPrecision(10, 2);
             entity.Property(e => e.PriceHighRange).HasPrecision(10, 2);
+            entity.Property(e => e.Barcode).HasMaxLength(50);
+            entity.Property(e => e.Brand).HasMaxLength(200);
+            entity.Property(e => e.NutritionGrade).HasMaxLength(20);
+            entity.HasIndex(e => e.Barcode).IsUnique().HasFilter("[Barcode] IS NOT NULL");
 
             entity.HasOne(e => e.Category)
                 .WithMany(c => c.ProductTemplates)

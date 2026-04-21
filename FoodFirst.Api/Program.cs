@@ -5,6 +5,7 @@ using FoodFirst.Api;
 using FoodFirst.Api.Hubs;
 using FoodFirst.Api.Middlewares;
 using FoodFirst.Dal.Context;
+using FoodFirst.Dal.Entities;
 using FoodFirst.Repository.Implementations;
 using FoodFirst.Repository.Interfaces;
 using FoodFirst.Service.Implementations;
@@ -108,6 +109,15 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DevDataSeeder.SeedAsync(db);
+
+    // Import products from OpenFoodFacts (Delhaize, Colruyt) if less than 20 products with barcodes
+    var barcodeCount = await db.ProductTemplates.CountAsync(p => p.Barcode != null);
+    if (barcodeCount < 20)
+    {
+        var offClient = scope.ServiceProvider.GetRequiredService<IOpenFoodFactsClient>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        await OpenFoodFactsImporter.ImportAsync(db, offClient, logger);
+    }
 }
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
