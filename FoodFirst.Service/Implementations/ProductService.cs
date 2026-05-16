@@ -29,7 +29,8 @@ public class ProductService(IStoreInventoryRepository inventories) : IProductSer
                 PriceRange.High => si.ProductTemplate.PriceHighRange,
                 _ => si.ProductTemplate.PriceMidRange
             };
-            var discounted = Math.Round(original * (100 - si.ProductTemplate.DiscountPercent) / 100m, 2);
+            var discountPercent = si.DiscountPercentOverride ?? si.ProductTemplate.DiscountPercent;
+            var discounted = Math.Round(original * (100 - discountPercent) / 100m, 2);
             return new AvailableProductDto(
                 si.Id,
                 si.ProductTemplateId,
@@ -44,6 +45,9 @@ public class ProductService(IStoreInventoryRepository inventories) : IProductSer
                 si.AvailableQuantity,
                 si.ExpirationDate,
                 si.StoreId,
-                si.Store.Name);
+                si.Store.Name,
+                si.Reason,
+                si.UnsellableSubReason,
+                si.ReasonNotes);
         }).ToList();
 }

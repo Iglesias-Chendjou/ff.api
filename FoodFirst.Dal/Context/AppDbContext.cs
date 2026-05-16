@@ -137,6 +137,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.SelectedRange).HasConversion<string>().HasMaxLength(10);
+            entity.Property(e => e.Reason).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.UnsellableSubReason).HasConversion<string>().HasMaxLength(30);
+            entity.Property(e => e.ReasonNotes).HasMaxLength(500);
 
             entity.HasOne(e => e.Store)
                 .WithMany(s => s.Inventories)

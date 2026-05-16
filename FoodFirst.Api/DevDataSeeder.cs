@@ -262,6 +262,8 @@ public static class DevDataSeeder
             foreach (var t in storeProducts)
             {
                 var qty = rng.Next(5, 30);
+                var isNearExpiry = rng.Next(100) < 20;
+                var subReason = (UnsellableSubReason)rng.Next(0, 4);
                 db.StoreInventories.Add(new StoreInventory
                 {
                     Id = Guid.NewGuid(),
@@ -270,10 +272,24 @@ public static class DevDataSeeder
                     SelectedRange = (PriceRange)rng.Next(0, 3),
                     Quantity = qty,
                     AvailableQuantity = qty,
-                    ExpirationDate = DateTime.UtcNow.AddDays(rng.Next(7, 30)),
+                    ExpirationDate = isNearExpiry
+                        ? DateTime.UtcNow.AddDays(1)
+                        : DateTime.UtcNow.AddDays(rng.Next(7, 30)),
                     CheckedAt = DateTime.UtcNow,
                     CheckedByUserId = driverUser.Id,
-                    IsPublished = true
+                    IsPublished = true,
+                    Reason = isNearExpiry ? ListingReason.NearExpiry : ListingReason.Unsellable,
+                    UnsellableSubReason = isNearExpiry ? null : subReason,
+                    ReasonNotes = isNearExpiry
+                        ? null
+                        : subReason switch
+                        {
+                            UnsellableSubReason.IncompletePack => "Conditionnement incomplet (ex. 11 œufs au lieu de 12)",
+                            UnsellableSubReason.DamagedPackaging => "Emballage légèrement abîmé, produit intact",
+                            UnsellableSubReason.Overstock => "Surstock magasin",
+                            UnsellableSubReason.PackagingDefect666 => "Défaut d'emballage (lot 666)",
+                            _ => null
+                        }
                 });
             }
         }

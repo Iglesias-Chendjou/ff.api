@@ -84,6 +84,8 @@ public static class OpenFoodFactsImporter
                         // Create inventory in each store
                         foreach (var store in stores)
                         {
+                            var daysToExpiry = Random.Shared.Next(1, 7);
+                            var isNearExpiry = daysToExpiry <= 1;
                             db.StoreInventories.Add(new StoreInventory
                             {
                                 Id = Guid.NewGuid(),
@@ -92,10 +94,12 @@ public static class OpenFoodFactsImporter
                                 SelectedRange = PriceRange.Mid,
                                 Quantity = Random.Shared.Next(5, 30),
                                 AvailableQuantity = Random.Shared.Next(3, 25),
-                                ExpirationDate = DateTime.UtcNow.AddDays(Random.Shared.Next(1, 7)),
+                                ExpirationDate = DateTime.UtcNow.AddDays(daysToExpiry),
                                 CheckedAt = DateTime.UtcNow,
                                 CheckedByUserId = (await db.Users.FirstAsync(u => u.Role == UserRole.Admin)).Id,
-                                IsPublished = true
+                                IsPublished = true,
+                                Reason = isNearExpiry ? ListingReason.NearExpiry : ListingReason.Unsellable,
+                                UnsellableSubReason = isNearExpiry ? null : (UnsellableSubReason)Random.Shared.Next(0, 4)
                             });
                         }
 

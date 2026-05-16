@@ -2,7 +2,12 @@
 
 ## Projet
 Plateforme Anti-Gaspi Bruxelles — Backend API REST.
-Marketplace B2C2B permettant aux magasins de vendre leurs surplus alimentaires a -50% pour lutter contre le gaspillage.
+Marketplace B2C2B revalorisant trois sources d'approvisionnement coexistantes (focus n°1 = invendables magasin) :
+1. **Invendables magasin** (`Reason = Unsellable`, focus) — produits consommables mais invendables en circuit normal : emballage abîmé, alvéole incomplète, surstock, défauts d'emballage 666.
+2. **Invendus DLC magasin** (`Reason = NearExpiry`) — produits frais à péremption J+1.
+3. **Achat en gros producteurs** (`SourceType = ProducerBulk`) — marchandise non conforme à la vente, conforme à la consommation. Stock permanent en entrepôt.
+
+Décote par défaut -50% (`ProductTemplate.DiscountPercent`), surchargeable par inventaire via `StoreInventory.DiscountPercentOverride` selon la gravité du défaut.
 
 ## Stack technique
 - **Framework** : ASP.NET 9 (C#)
@@ -71,7 +76,8 @@ Notification, TraceabilityLog
 - **Assignation par zone** : chaque commande est assignee a une zone selon la geolocalisation du client
 - **Itineraire de livraison** : entrepot → commande la plus proche → la plus eloignee (proximite croissante)
 - **Client absent** : appel telephonique + 5 min d'attente. Apres 5 min → Delivery.Status = Failed, Order.Status = Cancelled. La plateforme n'est plus responsable.
-- **Prix** : client paie 50% du prix affiche (gamme bas/milieu/haut)
+- **Prix** : decote par defaut -50% (`ProductTemplate.DiscountPercent`), surchargeable par inventaire via `StoreInventory.DiscountPercentOverride` (ex. -30% pour un defaut cosmetique mineur, -70% pour un gros defaut). Les 3 fourchettes de prix (bas/milieu/haut) restent dans `ProductTemplate`.
+- **Qualification de l'offre** (par `StoreInventory`) : `Reason` (Unsellable/NearExpiry) obligatoire ; si `Unsellable`, `UnsellableSubReason` requis (DamagedPackaging, IncompletePack, Overstock, PackagingDefect666) ; si `NearExpiry`, `ExpirationDate` doit etre <= J+1. Champ libre `ReasonNotes` pour precisions (ex. "alveole a 11 oeufs au lieu de 12").
 - **Abonnements** : plans Mensuel / Trimestriel / Semestriel / Annuel
 - **Colis Surprise** : Decouverte 30EUR/1 livraison, Classique 50EUR/3, Premium 80EUR/5
 - **Fournisseurs B2B** : inscription → validation admin → offre de rachat → examen → integration au catalogue

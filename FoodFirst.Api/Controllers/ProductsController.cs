@@ -36,11 +36,13 @@ public class ProductsController(IProductService products, IOpenFoodFactsClient o
                     Dal.Enums.PriceRange.High => pt.PriceHighRange,
                     _ => pt.PriceMidRange
                 };
+                var discountPercent = si.DiscountPercentOverride ?? pt.DiscountPercent;
                 return new AvailableProductDto(
                     si.Id, pt.Id, pt.Name, pt.Description, pt.ImageUrl, pt.Unit,
                     pt.Category?.Name ?? "", si.SelectedRange,
-                    price, Math.Round(price * (1 - pt.DiscountPercent / 100m), 2),
-                    si.AvailableQuantity, si.ExpirationDate, si.Store.Id, si.Store.Name);
+                    price, Math.Round(price * (1 - discountPercent / 100m), 2),
+                    si.AvailableQuantity, si.ExpirationDate, si.Store.Id, si.Store.Name,
+                    si.Reason, si.UnsellableSubReason, si.ReasonNotes);
             }).ToList();
 
             return Ok(dtos);

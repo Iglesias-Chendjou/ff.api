@@ -155,7 +155,8 @@ public class OrderService(
                 PriceRange.High => inv.ProductTemplate.PriceHighRange,
                 _ => inv.ProductTemplate.PriceMidRange
             };
-            var unit = Math.Round(baseline * (100 - inv.ProductTemplate.DiscountPercent) / 100m, 2);
+            var discountPercent = inv.DiscountPercentOverride ?? inv.ProductTemplate.DiscountPercent;
+            var unit = Math.Round(baseline * (100 - discountPercent) / 100m, 2);
             priced.Add(new PricedLine(
                 inv.Id, inv.StoreId, inv.ProductTemplate.Name, inv.SelectedRange,
                 unit, item.Quantity, unit * item.Quantity));

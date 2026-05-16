@@ -16,4 +16,7 @@ public record AvailableProductDto(
     int AvailableQuantity,
     DateTime ExpirationDate,
     Guid StoreId,
-    string StoreName);
+    string StoreName,
+    ListingReason Reason,
+    UnsellableSubReason? UnsellableSubReason,
+    string? ReasonNotes);

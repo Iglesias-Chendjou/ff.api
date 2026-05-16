@@ -15,6 +15,11 @@ public class StoreInventory
     public Guid CheckedByUserId { get; set; }
     public bool IsPublished { get; set; }
 
+    public ListingReason Reason { get; set; } = ListingReason.Unsellable;
+    public UnsellableSubReason? UnsellableSubReason { get; set; }
+    public int? DiscountPercentOverride { get; set; }
+    public string? ReasonNotes { get; set; }
+
     // Navigation properties
     public Store Store { get; set; } = null!;
     public ProductTemplate ProductTemplate { get; set; } = null!;
