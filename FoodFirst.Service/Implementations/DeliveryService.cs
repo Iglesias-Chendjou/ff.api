@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodFirst.Service.Implementations;
 
-public class DeliveryService(AppDbContext db) : IDeliveryService
+public class DeliveryService(AppDbContext db, IDeliveryNotifier notifier) : IDeliveryService
 {
     public async Task<IReadOnlyList<DeliveryDto>> GetMineAsync(Guid userId, CancellationToken ct = default)
     {
@@ -54,6 +54,7 @@ public class DeliveryService(AppDbContext db) : IDeliveryService
         delivery.Status = DeliveryStatus.PickingUp;
         delivery.ActualPickupTime = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        await notifier.StatusChangedAsync(deliveryId, delivery.Status.ToString(), ct);
     }
 
     public async Task UpdateLocationAsync(Guid deliveryId, UpdateLocationRequest request, CancellationToken ct = default)
@@ -62,9 +63,13 @@ public class DeliveryService(AppDbContext db) : IDeliveryService
             ?? throw new KeyNotFoundException($"Delivery {deliveryId} not found.");
         delivery.CurrentLatitude = request.Latitude;
         delivery.CurrentLongitude = request.Longitude;
-        if (delivery.Status == DeliveryStatus.PickingUp)
-            delivery.Status = DeliveryStatus.InTransit;
+        var statusChanged = delivery.Status == DeliveryStatus.PickingUp;
+        if (statusChanged) delivery.Status = DeliveryStatus.InTransit;
         await db.SaveChangesAsync(ct);
+
+        await notifier.LocationUpdatedAsync(deliveryId, request.Latitude, request.Longitude, ct);
+        if (statusChanged)
+            await notifier.StatusChangedAsync(deliveryId, delivery.Status.ToString(), ct);
     }
 
     public async Task CompleteAsync(Guid deliveryId, CompleteDeliveryRequest request, CancellationToken ct = default)
@@ -108,6 +113,7 @@ public class DeliveryService(AppDbContext db) : IDeliveryService
         }
 
         await db.SaveChangesAsync(ct);
+        await notifier.StatusChangedAsync(deliveryId, delivery.Status.ToString(), ct);
     }
 
     public async Task FailAsync(Guid deliveryId, FailDeliveryRequest request, CancellationToken ct = default)
@@ -123,6 +129,7 @@ public class DeliveryService(AppDbContext db) : IDeliveryService
         delivery.Order.CancelledAt = DateTime.UtcNow;
         delivery.DeliveryPerson.IsAvailable = true;
         await db.SaveChangesAsync(ct);
+        await notifier.StatusChangedAsync(deliveryId, delivery.Status.ToString(), ct);
     }
 
     private static DeliveryDto MapDto(Delivery d) => new(
