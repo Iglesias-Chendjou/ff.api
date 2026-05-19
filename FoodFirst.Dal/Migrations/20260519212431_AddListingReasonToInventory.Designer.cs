@@ -4,6 +4,7 @@ using FoodFirst.Dal.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodFirst.Dal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519212431_AddListingReasonToInventory")]
+    partial class AddListingReasonToInventory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,7 +78,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.BulkPurchaseRequest", b =>
@@ -134,7 +137,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.ToTable("BulkPurchaseRequests", (string)null);
+                    b.ToTable("BulkPurchaseRequests");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.CollectionRun", b =>
@@ -173,7 +176,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("CollectionRuns", (string)null);
+                    b.ToTable("CollectionRuns");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Delivery", b =>
@@ -243,7 +246,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("Deliveries", (string)null);
+                    b.ToTable("Deliveries");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.DeliveryPerson", b =>
@@ -295,7 +298,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("DeliveryPersons", (string)null);
+                    b.ToTable("DeliveryPersons");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Notification", b =>
@@ -336,7 +339,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Order", b =>
@@ -437,7 +440,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.OrderItem", b =>
@@ -484,7 +487,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("StoreInventoryId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Payment", b =>
@@ -543,7 +546,7 @@ namespace FoodFirst.Dal.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.ProductCategory", b =>
@@ -569,7 +572,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.ProductTemplate", b =>
@@ -637,7 +640,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("ProductTemplates", (string)null);
+                    b.ToTable("ProductTemplates");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Store", b =>
@@ -711,7 +714,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("Stores", (string)null);
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.StoreInventory", b =>
@@ -771,7 +774,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreInventories", (string)null);
+                    b.ToTable("StoreInventories");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.StorePickup", b =>
@@ -817,7 +820,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StorePickups", (string)null);
+                    b.ToTable("StorePickups");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.StorePickupItem", b =>
@@ -851,7 +854,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("StorePickupId");
 
-                    b.ToTable("StorePickupItems", (string)null);
+                    b.ToTable("StorePickupItems");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Subscription", b =>
@@ -911,7 +914,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("DeliveryAddressId");
 
-                    b.ToTable("Subscriptions", (string)null);
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Supplier", b =>
@@ -983,7 +986,7 @@ namespace FoodFirst.Dal.Migrations
                     b.HasIndex("VATNumber")
                         .IsUnique();
 
-                    b.ToTable("Suppliers", (string)null);
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.SurpriseBoxPlan", b =>
@@ -1017,7 +1020,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SurpriseBoxPlans", (string)null);
+                    b.ToTable("SurpriseBoxPlans");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.SurpriseBoxSubscription", b =>
@@ -1075,7 +1078,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("SurpriseBoxPlanId");
 
-                    b.ToTable("SurpriseBoxSubscriptions", (string)null);
+                    b.ToTable("SurpriseBoxSubscriptions");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.TraceabilityLog", b =>
@@ -1125,7 +1128,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("TraceabilityLogs", (string)null);
+                    b.ToTable("TraceabilityLogs");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.User", b =>
@@ -1178,7 +1181,7 @@ namespace FoodFirst.Dal.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Zone", b =>
@@ -1205,7 +1208,7 @@ namespace FoodFirst.Dal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Zones", (string)null);
+                    b.ToTable("Zones");
                 });
 
             modelBuilder.Entity("FoodFirst.Dal.Entities.Address", b =>
