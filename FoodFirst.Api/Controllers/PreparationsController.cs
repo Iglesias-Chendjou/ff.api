@@ -14,6 +14,13 @@ public class PreparationsController(IPreparationService preparations) : Controll
     public async Task<ActionResult<IReadOnlyList<PreparationQueueItemDto>>> Queue(CancellationToken ct) =>
         Ok(await preparations.GetQueueAsync(CurrentUser.Id(User), ct));
 
+    [HttpGet("preparations/orders/{id:guid}")]
+    public async Task<ActionResult<PreparationOrderDetailDto>> Order(Guid id, CancellationToken ct)
+    {
+        var dto = await preparations.GetOrderAsync(id, CurrentUser.Id(User), ct);
+        return dto is null ? NotFound() : Ok(dto);
+    }
+
     [HttpPut("orders/{id:guid}/start-preparing")]
     public async Task<IActionResult> StartPreparing(Guid id, CancellationToken ct)
     {

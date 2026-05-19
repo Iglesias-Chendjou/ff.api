@@ -21,6 +21,23 @@ public class PreparationService(AppDbContext db) : IPreparationService
         return rows;
     }
 
+    public async Task<PreparationOrderDetailDto?> GetOrderAsync(Guid orderId, Guid preparerUserId, CancellationToken ct = default)
+    {
+        var order = await db.Orders.AsNoTracking()
+            .Include(o => o.Items).ThenInclude(i => i.Store)
+            .FirstOrDefaultAsync(o => o.Id == orderId
+                && (o.Status == OrderStatus.Paid || o.Status == OrderStatus.Preparing || o.Status == OrderStatus.ReadyForCollection)
+                && (o.PreparedByUserId == null || o.PreparedByUserId == preparerUserId), ct);
+        if (order is null) return null;
+
+        return new PreparationOrderDetailDto(
+            order.Id, order.OrderNumber, order.PaidAt ?? order.CreatedAt, order.SubTotal, order.TotalAmount,
+            order.Notes, order.PreparedByUserId, order.PreparationStartedAt, order.PreparedAt,
+            order.Status.ToString(),
+            order.Items.Select(i => new PreparationOrderItemDto(
+                i.Id, i.StoreInventoryId, i.ProductName, i.Quantity, i.StoreId, i.Store.Name)).ToList());
+    }
+
     public async Task StartPreparingAsync(Guid orderId, Guid preparerUserId, CancellationToken ct = default)
     {
         var order = await db.Orders.FirstOrDefaultAsync(o => o.Id == orderId, ct)

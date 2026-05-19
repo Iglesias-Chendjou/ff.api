@@ -61,3 +61,24 @@ public record PreparationQueueItemDto(
     Guid? PreparedByUserId,
     DateTime? PreparationStartedAt,
     DateTime? PreparedAt);
+
+public record PreparationOrderDetailDto(
+    Guid OrderId,
+    string OrderNumber,
+    DateTime PaidAt,
+    decimal SubTotal,
+    decimal TotalAmount,
+    string? Notes,
+    Guid? PreparedByUserId,
+    DateTime? PreparationStartedAt,
+    DateTime? PreparedAt,
+    string Status,
+    IReadOnlyList<PreparationOrderItemDto> Items);
+
+public record PreparationOrderItemDto(
+    Guid Id,
+    Guid StoreInventoryId,
+    string ProductName,
+    int Quantity,
+    Guid StoreId,
+    string StoreName);

@@ -393,5 +393,67 @@ public static class DevDataSeeder
             }
             await db.SaveChangesAsync();
         }
+
+        // ── Commande Paid de test pour le preparateur ──
+        if (!await db.Orders.AnyAsync(o => o.OrderNumber.StartsWith("FF-SEED-")))
+        {
+            var clientAddress = await db.Addresses.FirstAsync(a => a.UserId == client.Id);
+            var storeForOrder = await db.Stores.FirstAsync(s => s.Name == "Delhaize Bruxelles Centre");
+            var seedItems = await db.StoreInventories
+                .Include(si => si.ProductTemplate)
+                .Where(si => si.StoreId == storeForOrder.Id && si.IsPublished && si.AvailableQuantity > 0)
+                .OrderBy(si => si.ExpirationDate)
+                .Take(3)
+                .ToListAsync();
+
+            if (seedItems.Count > 0)
+            {
+                var orderItems = seedItems.Select(si =>
+                {
+                    var baseline = si.SelectedRange switch
+                    {
+                        PriceRange.Low => si.ProductTemplate.PriceLowRange,
+                        PriceRange.High => si.ProductTemplate.PriceHighRange,
+                        _ => si.ProductTemplate.PriceMidRange
+                    };
+                    var discount = si.DiscountPercentOverride ?? si.ProductTemplate.DiscountPercent;
+                    var unit = Math.Round(baseline * (100 - discount) / 100m, 2);
+                    return new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        StoreInventoryId = si.Id,
+                        StoreId = si.StoreId,
+                        ProductName = si.ProductTemplate.Name,
+                        PriceRange = si.SelectedRange,
+                        UnitPrice = unit,
+                        Quantity = 2,
+                        LineTotal = unit * 2
+                    };
+                }).ToList();
+
+                var subTotal = orderItems.Sum(i => i.LineTotal);
+                var tva = Math.Round(subTotal * BusinessRules.TvaRateFood, 2);
+                var deliveryFee = subTotal >= BusinessRules.FreeDeliveryThreshold ? 0m : BusinessRules.StandardDeliveryFee;
+
+                db.Orders.Add(new Order
+                {
+                    Id = Guid.NewGuid(),
+                    OrderNumber = $"FF-SEED-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    ClientId = client.Id,
+                    DeliveryAddressId = clientAddress.Id,
+                    ZoneId = centreZone.Id,
+                    Status = OrderStatus.Paid,
+                    SubTotal = subTotal,
+                    DeliveryFee = deliveryFee,
+                    TVA = tva,
+                    TotalAmount = subTotal + deliveryFee + tva,
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-10),
+                    PaidAt = DateTime.UtcNow.AddMinutes(-5),
+                    Notes = "Sans coriandre svp",
+                    Items = orderItems
+                });
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }
