@@ -12,7 +12,7 @@ public class OrdersController(IOrderService orders) : ControllerBase
 {
     [HttpPost("cart/validate")]
     public async Task<ActionResult<CartValidationResponse>> Validate(CartValidationRequest request, CancellationToken ct) =>
-        Ok(await orders.ValidateCartAsync(request, ct));
+        Ok(await orders.ValidateCartAsync(CurrentUser.Id(User), request, ct));
 
     [HttpPost("orders")]
     public async Task<ActionResult<OrderDto>> Create(CreateOrderRequest request, CancellationToken ct)

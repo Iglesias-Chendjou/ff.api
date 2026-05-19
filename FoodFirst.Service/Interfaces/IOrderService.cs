@@ -5,7 +5,7 @@ namespace FoodFirst.Service.Interfaces;
 
 public interface IOrderService
 {
-    Task<CartValidationResponse> ValidateCartAsync(CartValidationRequest request, CancellationToken ct = default);
+    Task<CartValidationResponse> ValidateCartAsync(Guid clientId, CartValidationRequest request, CancellationToken ct = default);
     Task<OrderDto> CreateAsync(Guid clientId, CreateOrderRequest request, CancellationToken ct = default);
     Task<OrderDto?> GetAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<OrderDto>> GetMyOrdersAsync(Guid clientId, CancellationToken ct = default);

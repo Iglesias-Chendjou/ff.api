@@ -23,4 +23,5 @@ public class User
     public Subscription? Subscription { get; set; }
     public SurpriseBoxSubscription? SurpriseBoxSubscription { get; set; }
     public ICollection<CollectionRun> CollectionRuns { get; set; } = [];
+    public Membership? Membership { get; set; }
 }

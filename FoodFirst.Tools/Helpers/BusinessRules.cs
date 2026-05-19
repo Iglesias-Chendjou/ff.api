@@ -4,6 +4,12 @@ public static class BusinessRules
 {
     public const int OrderCutoffHour = 17;
 
+    public const decimal MinCartAmount = 12m;
+    public const decimal FreeDeliveryThreshold = 25m;
+    public const decimal StandardDeliveryFee = 2.99m;
+    public const decimal FoodFirstPlusMonthlyPrice = 6.99m;
+    public const decimal TvaRateFood = 0.06m;
+
     public static readonly (decimal Latitude, decimal Longitude) WarehouseBrussels = (50.8503m, 4.3517m);
 
     private static readonly TimeZoneInfo BrusselsTz =

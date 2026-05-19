@@ -3,6 +3,7 @@ using FoodFirst.Dal.Entities;
 using FoodFirst.Dal.Enums;
 using FoodFirst.Dto.Orders;
 using FoodFirst.Service.Interfaces;
+using FoodFirst.Tools.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodFirst.Service.Implementations;
@@ -12,16 +13,18 @@ public class OrderService(
     IZoneResolver zoneResolver,
     IDeliveryAssignmentService deliveryAssignment) : IOrderService
 {
-    private const decimal DeliveryFee = 3.50m;
-    private const decimal TvaRate = 0.06m;
-
-    public async Task<CartValidationResponse> ValidateCartAsync(CartValidationRequest request, CancellationToken ct = default)
+    public async Task<CartValidationResponse> ValidateCartAsync(Guid clientId, CartValidationRequest request, CancellationToken ct = default)
     {
         var (priced, errors) = await PriceCartAsync(request.Items, ct);
         var subTotal = priced.Sum(p => p.LineTotal);
-        var tva = Math.Round(subTotal * TvaRate, 2);
-        var total = subTotal + DeliveryFee + tva;
-        return new CartValidationResponse(errors.Count == 0, subTotal, DeliveryFee, tva, total, errors);
+
+        if (subTotal > 0 && subTotal < BusinessRules.MinCartAmount)
+            errors.Add($"Panier minimum : {BusinessRules.MinCartAmount:F2} EUR (sous-total actuel : {subTotal:F2} EUR).");
+
+        var deliveryFee = await ComputeDeliveryFeeAsync(clientId, subTotal, isSubscriptionOrder: false, ct);
+        var tva = Math.Round(subTotal * BusinessRules.TvaRateFood, 2);
+        var total = subTotal + deliveryFee + tva;
+        return new CartValidationResponse(errors.Count == 0, subTotal, deliveryFee, tva, total, errors);
     }
 
     public async Task<OrderDto> CreateAsync(Guid clientId, CreateOrderRequest request, CancellationToken ct = default)
@@ -50,7 +53,12 @@ public class OrderService(
         }
 
         var subTotal = priced.Sum(p => p.LineTotal);
-        var tva = Math.Round(subTotal * TvaRate, 2);
+
+        if (subTotal < BusinessRules.MinCartAmount)
+            throw new InvalidOperationException($"Panier minimum : {BusinessRules.MinCartAmount:F2} EUR.");
+
+        var deliveryFee = await ComputeDeliveryFeeAsync(clientId, subTotal, isSubscriptionOrder: false, ct);
+        var tva = Math.Round(subTotal * BusinessRules.TvaRateFood, 2);
 
         var order = new Order
         {
@@ -61,9 +69,9 @@ public class OrderService(
             ZoneId = zone.Id,
             Status = OrderStatus.Pending,
             SubTotal = subTotal,
-            DeliveryFee = DeliveryFee,
+            DeliveryFee = deliveryFee,
             TVA = tva,
-            TotalAmount = subTotal + DeliveryFee + tva,
+            TotalAmount = subTotal + deliveryFee + tva,
             Notes = request.Notes,
             CreatedAt = DateTime.UtcNow,
             Items = priced.Select(p => new OrderItem
@@ -122,6 +130,19 @@ public class OrderService(
 
         if (status == OrderStatus.Paid)
             await deliveryAssignment.AssignAsync(order.Id, ct);
+    }
+
+    private async Task<decimal> ComputeDeliveryFeeAsync(Guid clientId, decimal subTotal, bool isSubscriptionOrder, CancellationToken ct)
+    {
+        if (subTotal <= 0) return 0m;
+        if (isSubscriptionOrder) return 0m;
+        if (subTotal >= BusinessRules.FreeDeliveryThreshold) return 0m;
+
+        var hasActiveMembership = await db.Memberships.AsNoTracking()
+            .AnyAsync(m => m.UserId == clientId && m.Status == MembershipStatus.Active, ct);
+        if (hasActiveMembership) return 0m;
+
+        return BusinessRules.StandardDeliveryFee;
     }
 
     private async Task<(List<PricedLine> Priced, List<string> Errors)> PriceCartAsync(IReadOnlyList<CartItemDto> items, CancellationToken ct)

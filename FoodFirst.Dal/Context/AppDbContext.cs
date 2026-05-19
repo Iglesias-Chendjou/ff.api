@@ -28,6 +28,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CollectionRun> CollectionRuns => Set<CollectionRun>();
     public DbSet<StorePickup> StorePickups => Set<StorePickup>();
     public DbSet<StorePickupItem> StorePickupItems => Set<StorePickupItem>();
+    public DbSet<Membership> Memberships => Set<Membership>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -443,6 +444,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(e => e.StoreInventory)
                 .WithMany()
                 .HasForeignKey(e => e.StoreInventoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ──── Membership ────
+        modelBuilder.Entity<Membership>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.MonthlyPrice).HasPrecision(10, 2);
+            entity.Property(e => e.StripeSubscriptionId).HasMaxLength(256);
+            entity.Property(e => e.StripeCustomerId).HasMaxLength(256);
+
+            entity.HasOne(e => e.User)
+                .WithOne(u => u.Membership)
+                .HasForeignKey<Membership>(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
