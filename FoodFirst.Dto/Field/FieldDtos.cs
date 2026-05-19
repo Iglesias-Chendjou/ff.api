@@ -26,7 +26,16 @@ public record StorePickupDto(
     DateTime? PickedUpAt,
     decimal? TemperatureAtPickup,
     string? Notes,
-    int ExpectedItemsCount);
+    IReadOnlyList<StorePickupItemDto> Items);
+
+public record StorePickupItemDto(
+    Guid Id,
+    Guid StoreInventoryId,
+    string ProductName,
+    int ExpectedQuantity,
+    int CollectedQuantity,
+    bool IsConform,
+    string? NonConformityReason);
 
 public record CompletePickupRequest(
     decimal TemperatureAtPickup,

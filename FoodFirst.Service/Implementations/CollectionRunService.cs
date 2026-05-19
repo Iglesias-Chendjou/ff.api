@@ -13,7 +13,7 @@ public class CollectionRunService(AppDbContext db) : ICollectionRunService
         var runs = await db.CollectionRuns.AsNoTracking()
             .Include(r => r.Zone)
             .Include(r => r.Pickups).ThenInclude(p => p.Store)
-            .Include(r => r.Pickups).ThenInclude(p => p.Items)
+            .Include(r => r.Pickups).ThenInclude(p => p.Items).ThenInclude(i => i.StoreInventory).ThenInclude(si => si.ProductTemplate)
             .Where(r => r.CollectorUserId == collectorUserId
                         && r.Status != CollectionRunStatus.Cancelled
                         && r.Status != CollectionRunStatus.Completed)
@@ -28,7 +28,7 @@ public class CollectionRunService(AppDbContext db) : ICollectionRunService
         var run = await db.CollectionRuns.AsNoTracking()
             .Include(r => r.Zone)
             .Include(r => r.Pickups).ThenInclude(p => p.Store)
-            .Include(r => r.Pickups).ThenInclude(p => p.Items)
+            .Include(r => r.Pickups).ThenInclude(p => p.Items).ThenInclude(i => i.StoreInventory).ThenInclude(si => si.ProductTemplate)
             .FirstOrDefaultAsync(r => r.Id == runId && r.CollectorUserId == collectorUserId, ct);
         return run is null ? null : Map(run);
     }
@@ -101,6 +101,13 @@ public class CollectionRunService(AppDbContext db) : ICollectionRunService
             .Select(p => new StorePickupDto(
                 p.Id, p.StoreId, p.Store.Name, p.Store.Address, p.Store.Latitude, p.Store.Longitude,
                 p.OrderInRun, p.ArrivedAt, p.PickedUpAt, p.TemperatureAtPickup, p.Notes,
-                p.Items.Count))
+                p.Items.Select(i => new StorePickupItemDto(
+                    i.Id,
+                    i.StoreInventoryId,
+                    i.StoreInventory.ProductTemplate.Name,
+                    i.ExpectedQuantity,
+                    i.CollectedQuantity,
+                    i.IsConform,
+                    i.NonConformityReason)).ToList()))
             .ToList());
 }
