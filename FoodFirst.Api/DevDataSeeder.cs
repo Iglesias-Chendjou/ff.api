@@ -294,5 +294,104 @@ public static class DevDataSeeder
             }
         }
         await db.SaveChangesAsync();
+
+        // ── Collector + Preparer + tournée du soir ──
+        var collector = await db.Users.FirstOrDefaultAsync(u => u.Email == "collector@foodfirst.be");
+        if (collector is null)
+        {
+            collector = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "collector@foodfirst.be",
+                PasswordHash = PasswordHasher.Hash("Collector1234!"),
+                FirstName = "Camille",
+                LastName = "Collecteur",
+                Phone = "+32470333333",
+                Role = UserRole.Collector,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Users.Add(collector);
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.Users.AnyAsync(u => u.Email == "preparer@foodfirst.be"))
+        {
+            db.Users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "preparer@foodfirst.be",
+                PasswordHash = PasswordHasher.Hash("Preparer1234!"),
+                FirstName = "Pascal",
+                LastName = "Preparateur",
+                Phone = "+32470444444",
+                Role = UserRole.Preparer,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        if (!await db.CollectionRuns.AnyAsync(r => r.CollectorUserId == collector.Id))
+        {
+            var brusselsTz = TimeZoneInfo.TryFindSystemTimeZoneById("Romance Standard Time", out var tz)
+                ? tz
+                : TimeZoneInfo.FindSystemTimeZoneById("Europe/Brussels");
+            var nowBxl = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brusselsTz);
+            var scheduledLocal = nowBxl.Hour < 17
+                ? nowBxl.Date.AddHours(17)
+                : nowBxl.Date.AddDays(1).AddHours(17);
+            var scheduledUtc = TimeZoneInfo.ConvertTimeToUtc(scheduledLocal, brusselsTz);
+
+            var storesInCentre = await db.Stores
+                .Where(s => s.ZoneId == centreZone.Id && s.IsActive)
+                .ToListAsync();
+
+            var run = new CollectionRun
+            {
+                Id = Guid.NewGuid(),
+                CollectorUserId = collector.Id,
+                ZoneId = centreZone.Id,
+                ScheduledAt = scheduledUtc,
+                Status = CollectionRunStatus.Pending,
+                Notes = "Tournee de collecte du soir (seed)"
+            };
+            db.CollectionRuns.Add(run);
+
+            int orderInRun = 1;
+            foreach (var s in storesInCentre)
+            {
+                var pickup = new StorePickup
+                {
+                    Id = Guid.NewGuid(),
+                    CollectionRunId = run.Id,
+                    StoreId = s.Id,
+                    OrderInRun = orderInRun++
+                };
+                db.StorePickups.Add(pickup);
+
+                var someItems = await db.StoreInventories
+                    .Where(si => si.StoreId == s.Id && si.IsPublished && si.AvailableQuantity > 0)
+                    .OrderBy(si => si.ExpirationDate)
+                    .Take(3)
+                    .ToListAsync();
+
+                foreach (var si in someItems)
+                {
+                    db.StorePickupItems.Add(new StorePickupItem
+                    {
+                        Id = Guid.NewGuid(),
+                        StorePickupId = pickup.Id,
+                        StoreInventoryId = si.Id,
+                        ExpectedQuantity = si.Quantity,
+                        CollectedQuantity = 0,
+                        IsConform = true
+                    });
+                }
+            }
+            await db.SaveChangesAsync();
+        }
     }
 }
