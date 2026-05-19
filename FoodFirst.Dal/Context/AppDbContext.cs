@@ -25,6 +25,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<BulkPurchaseRequest> BulkPurchaseRequests => Set<BulkPurchaseRequest>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<TraceabilityLog> TraceabilityLogs => Set<TraceabilityLog>();
+    public DbSet<CollectionRun> CollectionRuns => Set<CollectionRun>();
+    public DbSet<StorePickup> StorePickups => Set<StorePickup>();
+    public DbSet<StorePickupItem> StorePickupItems => Set<StorePickupItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -180,6 +183,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(e => e.Zone)
                 .WithMany()
                 .HasForeignKey(e => e.ZoneId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.PreparedBy)
+                .WithMany()
+                .HasForeignKey(e => e.PreparedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -380,6 +388,61 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Notifications)
                 .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ──── CollectionRun ────
+        modelBuilder.Entity<CollectionRun>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+
+            entity.HasOne(e => e.Collector)
+                .WithMany(u => u.CollectionRuns)
+                .HasForeignKey(e => e.CollectorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Zone)
+                .WithMany(z => z.CollectionRuns)
+                .HasForeignKey(e => e.ZoneId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ──── StorePickup ────
+        modelBuilder.Entity<StorePickup>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TemperatureAtPickup).HasPrecision(5, 2);
+            entity.Property(e => e.StoreSignatureUrl).HasMaxLength(500);
+            entity.Property(e => e.PhotoUrl).HasMaxLength(500);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+
+            entity.HasOne(e => e.CollectionRun)
+                .WithMany(r => r.Pickups)
+                .HasForeignKey(e => e.CollectionRunId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.Pickups)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ──── StorePickupItem ────
+        modelBuilder.Entity<StorePickupItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.NonConformityReason).HasMaxLength(500);
+
+            entity.HasOne(e => e.StorePickup)
+                .WithMany(p => p.Items)
+                .HasForeignKey(e => e.StorePickupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.StoreInventory)
+                .WithMany()
+                .HasForeignKey(e => e.StoreInventoryId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

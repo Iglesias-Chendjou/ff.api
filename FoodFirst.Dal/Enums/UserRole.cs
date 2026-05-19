@@ -5,5 +5,7 @@ public enum UserRole
     Client,
     StoreManager,
     Delivery,
-    Admin
+    Admin,
+    Collector,
+    Preparer
 }

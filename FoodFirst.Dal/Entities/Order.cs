@@ -20,10 +20,12 @@ public class Order
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? PaidAt { get; set; }
+    public DateTime? PreparationStartedAt { get; set; }
     public DateTime? PreparedAt { get; set; }
     public DateTime? CollectedAt { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public DateTime? CancelledAt { get; set; }
+    public Guid? PreparedByUserId { get; set; }
 
     // Navigation properties
     public User Client { get; set; } = null!;
@@ -32,4 +34,5 @@ public class Order
     public ICollection<OrderItem> Items { get; set; } = [];
     public Payment? Payment { get; set; }
     public Delivery? Delivery { get; set; }
+    public User? PreparedBy { get; set; }
 }

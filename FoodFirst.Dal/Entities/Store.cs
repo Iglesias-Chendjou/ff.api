@@ -21,4 +21,5 @@ public class Store
     // Navigation properties
     public Zone Zone { get; set; } = null!;
     public ICollection<StoreInventory> Inventories { get; set; } = [];
+    public ICollection<StorePickup> Pickups { get; set; } = [];
 }

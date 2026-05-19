@@ -22,4 +22,5 @@ public class User
     public DeliveryPerson? DeliveryPerson { get; set; }
     public Subscription? Subscription { get; set; }
     public SurpriseBoxSubscription? SurpriseBoxSubscription { get; set; }
+    public ICollection<CollectionRun> CollectionRuns { get; set; } = [];
 }

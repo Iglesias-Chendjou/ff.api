@@ -12,4 +12,5 @@ public class Zone
     public ICollection<Store> Stores { get; set; } = [];
     public ICollection<DeliveryPerson> DeliveryPersons { get; set; } = [];
     public ICollection<Delivery> Deliveries { get; set; } = [];
+    public ICollection<CollectionRun> CollectionRuns { get; set; } = [];
 }
