@@ -20,4 +20,9 @@ public class StoresController(IStoreService stores) : ControllerBase
         await stores.PublishInventoryAsync(id, request, ct);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/inventory/upsert")]
+    public async Task<ActionResult<IReadOnlyList<StoreInventoryItemDto>>> UpsertInventory(
+        Guid id, UpsertStoreInventoryRequest request, CancellationToken ct) =>
+        Ok(await stores.UpsertInventoryAsync(id, CurrentUser.Id(User), request, ct));
 }
