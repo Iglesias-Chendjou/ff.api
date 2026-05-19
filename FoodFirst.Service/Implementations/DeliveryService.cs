@@ -10,8 +10,14 @@ namespace FoodFirst.Service.Implementations;
 
 public class DeliveryService(AppDbContext db) : IDeliveryService
 {
-    public async Task<IReadOnlyList<DeliveryDto>> GetMineAsync(Guid deliveryPersonId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DeliveryDto>> GetMineAsync(Guid userId, CancellationToken ct = default)
     {
+        var deliveryPersonId = await db.DeliveryPersons
+            .Where(dp => dp.UserId == userId)
+            .Select(dp => (Guid?)dp.Id)
+            .FirstOrDefaultAsync(ct);
+        if (deliveryPersonId is null) return [];
+
         var list = await db.Deliveries.AsNoTracking()
             .Include(d => d.Order).ThenInclude(o => o.DeliveryAddress)
             .Where(d => d.DeliveryPersonId == deliveryPersonId)
@@ -20,8 +26,14 @@ public class DeliveryService(AppDbContext db) : IDeliveryService
         return list.Select(MapDto).ToList();
     }
 
-    public async Task<IReadOnlyList<DeliveryDto>> GetRouteAsync(Guid deliveryPersonId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DeliveryDto>> GetRouteAsync(Guid userId, CancellationToken ct = default)
     {
+        var deliveryPersonId = await db.DeliveryPersons
+            .Where(dp => dp.UserId == userId)
+            .Select(dp => (Guid?)dp.Id)
+            .FirstOrDefaultAsync(ct);
+        if (deliveryPersonId is null) return [];
+
         var list = await db.Deliveries.AsNoTracking()
             .Include(d => d.Order).ThenInclude(o => o.DeliveryAddress)
             .Where(d => d.DeliveryPersonId == deliveryPersonId

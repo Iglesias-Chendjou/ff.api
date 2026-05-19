@@ -100,6 +100,7 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICollectionRunService, CollectionRunService>();
 builder.Services.AddScoped<IPreparationService, PreparationService>();
+builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();

@@ -435,7 +435,7 @@ public static class DevDataSeeder
                 var tva = Math.Round(subTotal * BusinessRules.TvaRateFood, 2);
                 var deliveryFee = subTotal >= BusinessRules.FreeDeliveryThreshold ? 0m : BusinessRules.StandardDeliveryFee;
 
-                db.Orders.Add(new Order
+                var seededOrder = new Order
                 {
                     Id = Guid.NewGuid(),
                     OrderNumber = $"FF-SEED-{DateTime.UtcNow:yyyyMMddHHmmss}",
@@ -451,6 +451,31 @@ public static class DevDataSeeder
                     PaidAt = DateTime.UtcNow.AddMinutes(-5),
                     Notes = "Sans coriandre svp",
                     Items = orderItems
+                };
+                db.Orders.Add(seededOrder);
+
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // ── Delivery seedee pour la commande Paid de test ──
+        var seedOrder = await db.Orders.FirstOrDefaultAsync(o => o.OrderNumber.StartsWith("FF-SEED-"));
+        if (seedOrder is not null && !await db.Deliveries.AnyAsync(d => d.OrderId == seedOrder.Id))
+        {
+            var driverPerson = await db.DeliveryPersons
+                .FirstOrDefaultAsync(dp => dp.UserId == driverUser.Id);
+            if (driverPerson is not null)
+            {
+                db.Deliveries.Add(new Delivery
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = seedOrder.Id,
+                    DeliveryPersonId = driverPerson.Id,
+                    ZoneId = centreZone.Id,
+                    Status = DeliveryStatus.Assigned,
+                    EstimatedPickupTime = DateTime.UtcNow.AddHours(1),
+                    EstimatedDeliveryTime = DateTime.UtcNow.AddHours(2),
+                    CreatedAt = DateTime.UtcNow.AddMinutes(-3)
                 });
                 await db.SaveChangesAsync();
             }
