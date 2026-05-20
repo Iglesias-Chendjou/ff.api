@@ -29,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StorePickup> StorePickups => Set<StorePickup>();
     public DbSet<StorePickupItem> StorePickupItems => Set<StorePickupItem>();
     public DbSet<Membership> Memberships => Set<Membership>();
+    public DbSet<DeliveryRun> DeliveryRuns => Set<DeliveryRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -258,6 +259,31 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             entity.HasOne(e => e.Zone)
                 .WithMany(z => z.Deliveries)
+                .HasForeignKey(e => e.ZoneId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DeliveryRun)
+                .WithMany(r => r.Deliveries)
+                .HasForeignKey(e => e.DeliveryRunId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ──── DeliveryRun ────
+        modelBuilder.Entity<DeliveryRun>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(64);
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+
+            entity.HasOne(e => e.DeliveryPersonUser)
+                .WithMany(u => u.DeliveryRuns)
+                .HasForeignKey(e => e.DeliveryPersonUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Zone)
+                .WithMany(z => z.DeliveryRuns)
                 .HasForeignKey(e => e.ZoneId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

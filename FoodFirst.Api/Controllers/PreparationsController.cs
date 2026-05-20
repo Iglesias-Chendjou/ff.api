@@ -21,6 +21,13 @@ public class PreparationsController(IPreparationService preparations) : Controll
         return dto is null ? NotFound() : Ok(dto);
     }
 
+    [HttpPost("preparations/scan/{code}")]
+    public async Task<ActionResult<PreparationOrderDetailDto>> Scan(string code, CancellationToken ct)
+    {
+        var dto = await preparations.ScanOrderAsync(code, CurrentUser.Id(User), ct);
+        return dto is null ? NotFound() : Ok(dto);
+    }
+
     [HttpPut("orders/{id:guid}/start-preparing")]
     public async Task<IActionResult> StartPreparing(Guid id, CancellationToken ct)
     {

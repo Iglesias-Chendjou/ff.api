@@ -20,9 +20,12 @@ public class Delivery
     public int? ClientRating { get; set; }
     public string? ClientComment { get; set; }
     public DateTime CreatedAt { get; set; }
+    public Guid? DeliveryRunId { get; set; }
+    public int OrderInRun { get; set; }
 
     // Navigation properties
     public Order Order { get; set; } = null!;
     public DeliveryPerson DeliveryPerson { get; set; } = null!;
     public Zone Zone { get; set; } = null!;
+    public DeliveryRun? DeliveryRun { get; set; }
 }

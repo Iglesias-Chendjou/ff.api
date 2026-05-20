@@ -81,4 +81,30 @@ public record PreparationOrderItemDto(
     string ProductName,
     int Quantity,
     Guid StoreId,
-    string StoreName);
+    string StoreName,
+    string? Barcode);
+
+// ─── Delivery runs (livreur) ───────────────────────────────────────────
+
+public record DeliveryRunDto(
+    Guid Id,
+    string Code,
+    Guid ZoneId,
+    string ZoneName,
+    DateTime ScheduledAt,
+    DateTime? StartedAt,
+    DateTime? CompletedAt,
+    DeliveryRunStatus Status,
+    IReadOnlyList<DeliveryRunStopDto> Stops);
+
+public record DeliveryRunStopDto(
+    Guid DeliveryId,
+    Guid OrderId,
+    string OrderNumber,
+    DeliveryStatus Status,
+    int OrderInRun,
+    string DeliveryStreet,
+    string DeliveryCity,
+    decimal DeliveryLatitude,
+    decimal DeliveryLongitude,
+    DateTime EstimatedDeliveryTime);

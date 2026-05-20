@@ -480,5 +480,35 @@ public static class DevDataSeeder
                 await db.SaveChangesAsync();
             }
         }
+
+        // ── DeliveryRun (bon de livraison) pour le driver ──
+        if (!await db.DeliveryRuns.AnyAsync(r => r.DeliveryPersonUserId == driverUser.Id))
+        {
+            var runCode = $"DR-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
+            var run = new DeliveryRun
+            {
+                Id = Guid.NewGuid(),
+                Code = runCode,
+                DeliveryPersonUserId = driverUser.Id,
+                ZoneId = centreZone.Id,
+                ScheduledAt = DateTime.UtcNow.AddHours(1),
+                Status = DeliveryRunStatus.Pending,
+                Notes = "Bon de livraison du jour (seed)"
+            };
+            db.DeliveryRuns.Add(run);
+
+            var driverDeliveries = await db.Deliveries
+                .Where(d => d.DeliveryPerson.UserId == driverUser.Id && d.DeliveryRunId == null)
+                .OrderBy(d => d.EstimatedDeliveryTime)
+                .ToListAsync();
+
+            int orderInRun = 1;
+            foreach (var d in driverDeliveries)
+            {
+                d.DeliveryRunId = run.Id;
+                d.OrderInRun = orderInRun++;
+            }
+            await db.SaveChangesAsync();
+        }
     }
 }
