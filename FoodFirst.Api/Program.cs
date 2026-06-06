@@ -91,6 +91,7 @@ builder.Services.AddHttpClient<IOpenFoodFactsClient, OpenFoodFactsClient>(client
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddScoped<IZoneResolver, ZoneResolver>();
 builder.Services.AddScoped<IDeliveryAssignmentService, DeliveryAssignmentService>();
