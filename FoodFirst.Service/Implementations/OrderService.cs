@@ -98,6 +98,7 @@ public class OrderService(
     {
         var order = await db.Orders.AsNoTracking()
             .Include(o => o.Items)
+            .Include(o => o.Delivery)
             .FirstOrDefaultAsync(o => o.Id == id, ct);
         return order is null ? null : Map(order);
     }
@@ -107,6 +108,7 @@ public class OrderService(
         var list = await db.Orders.AsNoTracking()
             .Where(o => o.ClientId == clientId)
             .Include(o => o.Items)
+            .Include(o => o.Delivery)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(ct);
         return list.Select(Map).ToList();
@@ -187,7 +189,8 @@ public class OrderService(
 
     private static OrderDto Map(Order o) => new(
         o.Id, o.OrderNumber, o.Status, o.SubTotal, o.DeliveryFee, o.TVA, o.TotalAmount, o.CreatedAt,
-        o.Items.Select(i => new OrderItemDto(i.Id, i.ProductName, i.Quantity, i.UnitPrice, i.LineTotal, i.PriceRange)).ToList());
+        o.Items.Select(i => new OrderItemDto(i.Id, i.ProductName, i.Quantity, i.UnitPrice, i.LineTotal, i.PriceRange)).ToList(),
+        o.Delivery?.Id);
 
     private sealed record PricedLine(Guid InventoryId, Guid StoreId, string ProductName, PriceRange PriceRange, decimal UnitPrice, int Quantity, decimal LineTotal);
 }

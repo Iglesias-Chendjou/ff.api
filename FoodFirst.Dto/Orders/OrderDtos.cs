@@ -23,4 +23,5 @@ public record OrderDto(
     decimal TVA,
     decimal TotalAmount,
     DateTime CreatedAt,
-    IReadOnlyList<OrderItemDto> Items);
+    IReadOnlyList<OrderItemDto> Items,
+    Guid? DeliveryId);
