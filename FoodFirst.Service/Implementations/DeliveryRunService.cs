@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodFirst.Service.Implementations;
 
-public class DeliveryRunService(AppDbContext db) : IDeliveryRunService
+public class DeliveryRunService(AppDbContext db, IDeliveryAssignmentService assignment) : IDeliveryRunService
 {
     public async Task<IReadOnlyList<DeliveryRunDto>> GetMyRunsAsync(Guid userId, CancellationToken ct = default)
     {
@@ -145,6 +145,32 @@ public class DeliveryRunService(AppDbContext db) : IDeliveryRunService
         run.Status = DeliveryRunStatus.Completed;
         run.CompletedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+
+        // Reassignation de fin de tournee : les commandes de la zone restees sans
+        // livreur (aucun disponible au moment du paiement, car en tournee) sont
+        // reprises maintenant que le livreur est libere -> prochaine tournee.
+        await ReassignOrphanOrdersAsync(run.ZoneId, ct);
+    }
+
+    private async Task ReassignOrphanOrdersAsync(Guid zoneId, CancellationToken ct)
+    {
+        var orphans = await db.Orders
+            .Where(o => o.ZoneId == zoneId
+                && o.Delivery == null
+                && (o.Status == OrderStatus.Paid
+                    || o.Status == OrderStatus.Preparing
+                    || o.Status == OrderStatus.ReadyForCollection))
+            .OrderBy(o => o.CreatedAt)
+            .Select(o => new { o.Id, o.Status })
+            .ToListAsync(ct);
+
+        foreach (var o in orphans)
+        {
+            var deliveryId = await assignment.AssignAsync(o.Id, ct);
+            // Si la commande etait deja prete, on l'attache tout de suite a la tournee.
+            if (deliveryId is not null && o.Status == OrderStatus.ReadyForCollection)
+                await EnsureRunForReadyOrderAsync(o.Id, ct);
+        }
     }
 
     private static DeliveryRunDto Map(Dal.Entities.DeliveryRun r)
