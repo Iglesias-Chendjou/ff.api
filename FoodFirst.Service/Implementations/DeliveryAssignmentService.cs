@@ -20,10 +20,36 @@ public class DeliveryAssignmentService(AppDbContext db) : IDeliveryAssignmentSer
         if (order.ZoneId is null)
             throw new InvalidOperationException("Order has no assigned zone.");
 
-        var driver = await db.DeliveryPersons
+        // Selection du livreur dans la zone, parmi les livreurs en service et verifies
+        // (mieux notes en premier). On retient le premier qui :
+        //   - n'est PAS deja en tournee (un run InProgress n'accepte aucune nouvelle commande)
+        //   - dont la tournee en preparation (run Pending) n'a pas atteint MaxStopsPerRun.
+        var candidates = await db.DeliveryPersons
             .Where(dp => dp.ZoneId == order.ZoneId && dp.IsAvailable && dp.IsVerified)
             .OrderByDescending(dp => dp.AverageRating)
-            .FirstOrDefaultAsync(ct);
+            .ToListAsync(ct);
+
+        DeliveryPerson? driver = null;
+        foreach (var dp in candidates)
+        {
+            // Pendant sa tournee, le livreur ne recoit pas de nouvelles commandes.
+            var onActiveRun = await db.DeliveryRuns.AnyAsync(r =>
+                r.DeliveryPersonUserId == dp.UserId &&
+                r.Status == DeliveryRunStatus.InProgress, ct);
+            if (onActiveRun) continue;
+
+            // Capacite : nombre de stops non termines dans la tournee en preparation.
+            var activeStops = await db.Deliveries.CountAsync(d =>
+                d.DeliveryPersonId == dp.Id &&
+                d.Status != DeliveryStatus.Delivered &&
+                d.Status != DeliveryStatus.Failed &&
+                d.Status != DeliveryStatus.Returned, ct);
+            if (activeStops < BusinessRules.MaxStopsPerRun)
+            {
+                driver = dp;
+                break;
+            }
+        }
 
         if (driver is null) return null;
 
@@ -44,7 +70,6 @@ public class DeliveryAssignmentService(AppDbContext db) : IDeliveryAssignmentSer
         };
 
         db.Deliveries.Add(delivery);
-        driver.IsAvailable = false;
         await db.SaveChangesAsync(ct);
         return delivery.Id;
     }

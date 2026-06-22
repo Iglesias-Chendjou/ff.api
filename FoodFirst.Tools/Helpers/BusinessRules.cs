@@ -5,6 +5,10 @@ public static class BusinessRules
     public const int OrderCutoffHour = 17;
     public const int DeliveryRunStartHourLocal = 6;
 
+    // Capacite max de stops par tournee : un livreur reste assignable tant que
+    // sa tournee active n'a pas atteint ce seuil (modele multi-stops).
+    public const int MaxStopsPerRun = 15;
+
     public const decimal MinCartAmount = 12m;
     public const decimal FreeDeliveryThreshold = 25m;
     public const decimal StandardDeliveryFee = 2.99m;

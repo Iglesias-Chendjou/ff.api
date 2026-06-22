@@ -91,7 +91,6 @@ public class DeliveryService(AppDbContext db, IDeliveryNotifier notifier) : IDel
         delivery.Order.Status = OrderStatus.Delivered;
         delivery.Order.DeliveredAt = nowUtc;
 
-        delivery.DeliveryPerson.IsAvailable = true;
         delivery.DeliveryPerson.TotalDeliveries += 1;
 
         var isCompliant = request.DeliveredTemperature is null || request.DeliveredTemperature <= 7m;
@@ -127,7 +126,6 @@ public class DeliveryService(AppDbContext db, IDeliveryNotifier notifier) : IDel
         delivery.ClientComment = request.Reason;
         delivery.Order.Status = OrderStatus.Cancelled;
         delivery.Order.CancelledAt = DateTime.UtcNow;
-        delivery.DeliveryPerson.IsAvailable = true;
         await db.SaveChangesAsync(ct);
         await notifier.StatusChangedAsync(deliveryId, delivery.Status.ToString(), ct);
     }
