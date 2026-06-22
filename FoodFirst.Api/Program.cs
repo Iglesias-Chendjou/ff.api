@@ -112,6 +112,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference(options => options.WithTitle("FoodFirst API"));
+    // Swagger UI servi sur /swagger, basé sur la spec OpenAPI native (.NET 10)
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "FoodFirst API v1");
+        options.DocumentTitle = "FoodFirst API — Swagger";
+    });
 
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
